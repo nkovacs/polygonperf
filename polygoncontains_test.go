@@ -89,6 +89,7 @@ func BenchmarkContains(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		coordinates.Contains(testPoi1)
+		coordinates.Contains(testPoi2)
 	}
 }
 
