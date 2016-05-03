@@ -15,6 +15,10 @@ type Geometry struct {
 
 type PolygonCoordinates [][][2]float64
 
+type PolygonCoordinatesStruct struct {
+	coords [][][2]float64
+}
+
 // Contains returns true if the polygon contains the poi.
 func (c PolygonCoordinates) Contains(p Poi) bool {
 	plat := p.GetLat()
@@ -22,6 +26,28 @@ func (c PolygonCoordinates) Contains(p Poi) bool {
 
 	inside := false
 	for _, ring := range c {
+		l := len(ring)
+		for i := range ring {
+			j := i + 1
+			if j >= l {
+				j = 0
+			}
+
+			if rayCrossesSegment(plng, plat, ring[i], ring[j]) {
+				inside = !inside
+			}
+		}
+	}
+	return inside
+}
+
+// Contains returns true if the polygon contains the poi.
+func (c *PolygonCoordinatesStruct) Contains(p Poi) bool {
+	plat := p.GetLat()
+	plng := p.GetLng()
+
+	inside := false
+	for _, ring := range c.coords {
 		l := len(ring)
 		for i := range ring {
 			j := i + 1

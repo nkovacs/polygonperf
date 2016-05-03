@@ -84,12 +84,37 @@ func TestContains(t *testing.T) {
 	}
 }
 
+func TestStructContains(t *testing.T) {
+	coordinates := getPolygonCoordinates(t)
+	coordinatesStruct := &PolygonCoordinatesStruct{
+		coords: coordinates,
+	}
+	if !coordinatesStruct.Contains(testPoi1) {
+		t.Errorf("contains failed testPoi1")
+	}
+	if coordinatesStruct.Contains(testPoi2) {
+		t.Errorf("contains failed testPoi2")
+	}
+}
+
 func BenchmarkContains(b *testing.B) {
 	coordinates := getPolygonCoordinates(b)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		coordinates.Contains(testPoi1)
 		coordinates.Contains(testPoi2)
+	}
+}
+
+func BenchmarkStructContains(b *testing.B) {
+	coordinates := getPolygonCoordinates(b)
+	coordinatesStruct := &PolygonCoordinatesStruct{
+		coords: coordinates,
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		coordinatesStruct.Contains(testPoi1)
+		coordinatesStruct.Contains(testPoi2)
 	}
 }
 
