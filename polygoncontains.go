@@ -20,6 +20,52 @@ type PolygonCoordinatesStruct struct {
 }
 
 // Contains returns true if the polygon contains the poi.
+func (c PolygonCoordinates) ContainsInline(p Poi) bool {
+	plat := p.GetLat()
+	plng := p.GetLng()
+
+	inside := false
+	for _, ring := range c {
+		l := len(ring)
+		for i := range ring {
+			j := i + 1
+			if j >= l {
+				j = 0
+			}
+
+			if ((ring[i][1] > plat) != (ring[j][1] > plat)) &&
+				(plng < (ring[j][0]-ring[i][0])*(plat-ring[i][1])/(ring[j][1]-ring[i][1])+ring[i][0]) {
+				inside = !inside
+			}
+		}
+	}
+	return inside
+}
+
+// Contains returns true if the polygon contains the poi.
+func (c *PolygonCoordinatesStruct) ContainsInline(p Poi) bool {
+	plat := p.GetLat()
+	plng := p.GetLng()
+
+	inside := false
+	for _, ring := range c.coords {
+		l := len(ring)
+		for i := range ring {
+			j := i + 1
+			if j >= l {
+				j = 0
+			}
+
+			if ((ring[i][1] > plat) != (ring[j][1] > plat)) &&
+				(plng < (ring[j][0]-ring[i][0])*(plat-ring[i][1])/(ring[j][1]-ring[i][1])+ring[i][0]) {
+				inside = !inside
+			}
+		}
+	}
+	return inside
+}
+
+// Contains returns true if the polygon contains the poi.
 func (c PolygonCoordinates) Contains(p Poi) bool {
 	plat := p.GetLat()
 	plng := p.GetLng()

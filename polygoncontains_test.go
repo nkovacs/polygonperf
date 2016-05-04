@@ -57,11 +57,24 @@ func (p testPoi) GetLng() float64 {
 	return p.Lng
 }
 
+var testPois = [][]testPoi{
+	{
+		testPoi{Lng: -0.14247894287109378, Lat: 51.51173391474148},
+		testPoi{Lng: 0.07553100585937501, Lat: 51.49335472541077},
+	},
+	{
+		testPoi{Lng: 21.891628, Lat: 47.380651},
+		testPoi{Lng: 18.528550, Lat: 47.033121},
+	},
+}
+
+/*
 var testPoi1 = testPoi{Lng: -0.14247894287109378, Lat: 51.51173391474148}
 var testPoi2 = testPoi{Lng: 0.07553100585937501, Lat: 51.49335472541077}
 
 var testPoi2_1 = testPoi{Lng: 21.891628, Lat: 47.380651}
 var testPoi2_2 = testPoi{Lng: 18.528550, Lat: 47.033121}
+*/
 
 type Fataler interface {
 	Fatal(args ...interface{})
@@ -82,92 +95,80 @@ func getPolygonCoordinates(f Fataler, index int) PolygonCoordinates {
 	return coordinates
 }
 
+func doTestContains(t *testing.T, index int) {
+	coordinates := getPolygonCoordinates(t, index)
+	if !coordinates.Contains(testPois[index][0]) {
+		t.Errorf("contains failed for polygon %v", index)
+	}
+	if coordinates.Contains(testPois[index][1]) {
+		t.Errorf("not contains failed for polygon %v", index)
+	}
+}
+
+func doTestContainsStruct(t *testing.T, index int) {
+	coordinates := getPolygonCoordinates(t, index)
+	coordinatesStruct := &PolygonCoordinatesStruct{
+		coords: coordinates,
+	}
+	if !coordinatesStruct.Contains(testPois[index][0]) {
+		t.Errorf("contains failed for polygon %v", index)
+	}
+	if coordinatesStruct.Contains(testPois[index][1]) {
+		t.Errorf("not contains failed for polygon %v", index)
+	}
+}
+
+func doBenchmarkContains(b *testing.B, index int) {
+	coordinates := getPolygonCoordinates(b, index)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		coordinates.Contains(testPois[index][0])
+		coordinates.Contains(testPois[index][1])
+	}
+}
+
+func doBenchmarkStructContains(b *testing.B, index int) {
+	coordinates := getPolygonCoordinates(b, index)
+	coordinatesStruct := &PolygonCoordinatesStruct{
+		coords: coordinates,
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		coordinatesStruct.Contains(testPois[index][0])
+		coordinatesStruct.Contains(testPois[index][1])
+	}
+}
+
 func TestContains(t *testing.T) {
-	coordinates := getPolygonCoordinates(t, 0)
-	if !coordinates.Contains(testPoi1) {
-		t.Errorf("contains failed testPoi1")
-	}
-	if coordinates.Contains(testPoi2) {
-		t.Errorf("contains failed testPoi2")
-	}
+	doTestContains(t, 0)
 }
 
 func TestStructContains(t *testing.T) {
-	coordinates := getPolygonCoordinates(t, 0)
-	coordinatesStruct := &PolygonCoordinatesStruct{
-		coords: coordinates,
-	}
-	if !coordinatesStruct.Contains(testPoi1) {
-		t.Errorf("contains failed testPoi1")
-	}
-	if coordinatesStruct.Contains(testPoi2) {
-		t.Errorf("contains failed testPoi2")
-	}
+	doTestContainsStruct(t, 0)
 }
 
 func BenchmarkContains(b *testing.B) {
-	coordinates := getPolygonCoordinates(b, 0)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		coordinates.Contains(testPoi1)
-		coordinates.Contains(testPoi2)
-	}
+	doBenchmarkContains(b, 0)
 }
 
 func BenchmarkStructContains(b *testing.B) {
-	coordinates := getPolygonCoordinates(b, 0)
-	coordinatesStruct := &PolygonCoordinatesStruct{
-		coords: coordinates,
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		coordinatesStruct.Contains(testPoi1)
-		coordinatesStruct.Contains(testPoi2)
-	}
+	doBenchmarkStructContains(b, 0)
 }
 
 func TestContains2(t *testing.T) {
-	coordinates := getPolygonCoordinates(t, 1)
-	if !coordinates.Contains(testPoi2_1) {
-		t.Errorf("contains failed testPoi2_1")
-	}
-	if coordinates.Contains(testPoi2_2) {
-		t.Errorf("contains failed testPoi2_2")
-	}
+	doTestContains(t, 1)
 }
 
 func TestStructContains2(t *testing.T) {
-	coordinates := getPolygonCoordinates(t, 1)
-	coordinatesStruct := &PolygonCoordinatesStruct{
-		coords: coordinates,
-	}
-	if !coordinatesStruct.Contains(testPoi2_1) {
-		t.Errorf("contains failed testPoi2_1")
-	}
-	if coordinatesStruct.Contains(testPoi2_2) {
-		t.Errorf("contains failed testPoi2_2")
-	}
+	doTestContainsStruct(t, 1)
 }
 
 func BenchmarkContains2(b *testing.B) {
-	coordinates := getPolygonCoordinates(b, 1)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		coordinates.Contains(testPoi2_1)
-		coordinates.Contains(testPoi2_2)
-	}
+	doBenchmarkContains(b, 1)
 }
 
 func BenchmarkStructContains2(b *testing.B) {
-	coordinates := getPolygonCoordinates(b, 1)
-	coordinatesStruct := &PolygonCoordinatesStruct{
-		coords: coordinates,
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		coordinatesStruct.Contains(testPoi2_1)
-		coordinatesStruct.Contains(testPoi2_2)
-	}
+	doBenchmarkStructContains(b, 1)
 }
 
 func BenchmarkRayCrossesSegment(b *testing.B) {
@@ -176,4 +177,82 @@ func BenchmarkRayCrossesSegment(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		rayCrossesSegment(27.123123, 44.23232, pa, pb)
 	}
+}
+
+// manually inlined
+
+func doTestContainsInline(t *testing.T, index int) {
+	coordinates := getPolygonCoordinates(t, index)
+	if !coordinates.ContainsInline(testPois[index][0]) {
+		t.Errorf("contains failed for polygon %v", index)
+	}
+	if coordinates.ContainsInline(testPois[index][1]) {
+		t.Errorf("not contains failed for polygon %v", index)
+	}
+}
+
+func doTestContainsStructInline(t *testing.T, index int) {
+	coordinates := getPolygonCoordinates(t, index)
+	coordinatesStruct := &PolygonCoordinatesStruct{
+		coords: coordinates,
+	}
+	if !coordinatesStruct.ContainsInline(testPois[index][0]) {
+		t.Errorf("contains failed for polygon %v", index)
+	}
+	if coordinatesStruct.ContainsInline(testPois[index][1]) {
+		t.Errorf("not contains failed for polygon %v", index)
+	}
+}
+
+func doBenchmarkContainsInline(b *testing.B, index int) {
+	coordinates := getPolygonCoordinates(b, index)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		coordinates.ContainsInline(testPois[index][0])
+		coordinates.ContainsInline(testPois[index][1])
+	}
+}
+
+func doBenchmarkStructContainsInline(b *testing.B, index int) {
+	coordinates := getPolygonCoordinates(b, index)
+	coordinatesStruct := &PolygonCoordinatesStruct{
+		coords: coordinates,
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		coordinatesStruct.ContainsInline(testPois[index][0])
+		coordinatesStruct.ContainsInline(testPois[index][1])
+	}
+}
+
+func TestContainsInline(t *testing.T) {
+	doTestContainsInline(t, 0)
+}
+
+func TestStructContainsInline(t *testing.T) {
+	doTestContainsStructInline(t, 0)
+}
+
+func BenchmarkContainsInline(b *testing.B) {
+	doBenchmarkContainsInline(b, 0)
+}
+
+func BenchmarkStructContainsInline(b *testing.B) {
+	doBenchmarkStructContainsInline(b, 0)
+}
+
+func TestContains2Inline(t *testing.T) {
+	doTestContainsInline(t, 1)
+}
+
+func TestStructContains2Inline(t *testing.T) {
+	doTestContainsStructInline(t, 1)
+}
+
+func BenchmarkContains2Inline(b *testing.B) {
+	doBenchmarkContainsInline(b, 1)
+}
+
+func BenchmarkStructContains2Inline(b *testing.B) {
+	doBenchmarkStructContainsInline(b, 1)
 }
